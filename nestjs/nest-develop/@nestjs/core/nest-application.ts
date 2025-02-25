@@ -1,14 +1,15 @@
 import "reflect-metadata"
-import express, { Express, NextFunction, Request, Response } from 'express';
+import express, { Express, NextFunction, Request as ExpressResquest, Response as ExpressResponse } from 'express';
 import path from 'path';
 import { Logger } from './logger';
 
 type HttpMethod = 'get' | 'post' | 'put' | 'delete' | 'patch' | 'head';
 export class NestApplication {
     private readonly app: Express = express();
-
-    constructor(protected readonly module: Express) { }
-
+    constructor(protected readonly module: Express) {
+        this.app.use(express.json());
+        this.app.use(express.urlencoded({ extended: true }));
+    }
     // 核心逻辑处理
     async init() {
         // 1.处理路由映射
@@ -43,7 +44,8 @@ export class NestApplication {
                     const routerPath = path.posix.join(prefix, pathMetadata);
 
                     // express 注册路由
-                    this.app[method](routerPath, async (req: Request, res: Response, next: NextFunction) => {
+                    this.app[method](routerPath, async (req: ExpressResquest, res: ExpressResponse, next: NextFunction) => {
+                        this.paramsParser(controller, method, req, res, next)
                         const result = await methodHandler.call(controller);
                         // methodHandler.call(this.module,...args);
                         res.send(result);
@@ -54,6 +56,13 @@ export class NestApplication {
             }
 
         }
+    }
+
+    private paramsParser(controller: any, method: HttpMethod, req: ExpressResquest, res: ExpressResponse, next: NextFunction) {
+        // 获取参数装饰器上的参数
+        const params = Reflect.getMetadata(`params`, controller) ?? [];
+        console.log(params);
+
     }
 
     public async listen(port: number, callback?: () => void) {
