@@ -1,11 +1,20 @@
 {
-  "name": "nest-develop",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "",
-  "license": "ISC"
+    "name": "nest-develop",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "start": "nodemon src/main.ts"
+    },
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "cli-color": "^2.0.4",
+        "express": "^4.21.2",
+        "reflect-metadata": "^0.2.2"
+    },
+    "devDependencies": {
+        "@types/cli-color": "^2.0.6",
+        "@types/express": "^5.0.0"
+    }
 }
