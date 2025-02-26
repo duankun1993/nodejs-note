@@ -64,6 +64,7 @@ export class NestApplication {
         const paramsMetadata = Reflect.getMetadata("params", controller, methodType) ?? [];
         // 遍历params，返回一个数组，数组的每个元素是一个对象，对象包含key和data
         return paramsMetadata.map(({ key, data }: { key: string; data: string | undefined }) => {
+            // 根据元数据不同的key返回不同的响应解析结果
             switch (key) {
                 case "Request":
                     return req;
