@@ -22,4 +22,5 @@ const methodDecoratorFactory = (method: string) => {
 };
 
 export const Get = methodDecoratorFactory("GET");
+export const Post = methodDecoratorFactory("Post");
 export const Redirect = methodDecoratorFactory("Redirect");

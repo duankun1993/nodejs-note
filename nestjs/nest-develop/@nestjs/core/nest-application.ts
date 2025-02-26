@@ -6,7 +6,7 @@ import { Logger } from './logger';
 type HttpMethod = 'get' | 'post' | 'put' | 'delete' | 'patch' | 'head';
 export class NestApplication {
     private readonly app: Express = express();
-    constructor(protected readonly module: Express) {
+    constructor(protected readonly module: any) {
         this.app.use(express.json());
         this.app.use(express.urlencoded({ extended: true }));
     }
@@ -31,10 +31,10 @@ export class NestApplication {
             // 获取实例上的所有方法名
             const methodNames = Object.getOwnPropertyNames(controllerPrototype);
             // 遍历方法名
-            for (const name of methodNames) {
-                if (name !== 'constructor') {
+            for (const methodName of methodNames) {
+                if (methodName !== 'constructor') {
                     // 获取该方法实体
-                    const methodHandler = controllerPrototype[name];
+                    const methodHandler = controllerPrototype[methodName];
                     // 获取该方法装饰器上的path和method元数据
                     const methodType = Reflect.getMetadata("method", methodHandler) as string;
                     if (!methodType) continue;
@@ -45,9 +45,9 @@ export class NestApplication {
 
                     // express 注册路由
                     this.app[method](routerPath, async (req: ExpressResquest, res: ExpressResponse, next: NextFunction) => {
-                        this.paramsParser(controller, method, req, res, next)
-                        const result = await methodHandler.call(controller);
-                        // methodHandler.call(this.module,...args);
+                        const args = this.paramsParser(controller, methodName, req, res, next)
+                        const result = await methodHandler.call(controller, ...args);
+
                         res.send(result);
                     });
 
@@ -58,10 +58,35 @@ export class NestApplication {
         }
     }
 
-    private paramsParser(controller: any, method: HttpMethod, req: ExpressResquest, res: ExpressResponse, next: NextFunction) {
-        // 获取参数装饰器上的参数
-        const params = Reflect.getMetadata(`params`, controller) ?? [];
-        console.log(params);
+    private paramsParser(controller: Object, methodType: string, req: ExpressResquest, res: ExpressResponse, next: NextFunction) {
+        // 获取元数据
+        // 从控制器实例（controller）上获取（methodType）方法上的元数据params，值是一个数组
+        const paramsMetadata = Reflect.getMetadata("params", controller, methodType) ?? [];
+        // 遍历params，返回一个数组，数组的每个元素是一个对象，对象包含key和data
+        return paramsMetadata.map(({ key, data }: { key: string; data: string | undefined }) => {
+            switch (key) {
+                case "Request":
+                    return req;
+                case "Response":
+                    return res;
+                case "Next":
+                    return next;
+                case "Param":
+                    return data ? req.params[data] : req.params;
+                case "Query":
+                    return data ? req.query[data] : req.query;
+                case "Body":
+                    return data ? req.body[data] : req.body;
+                case "Headers":
+                    return data ? req.headers[data] : req.headers;
+                case "Cookies":
+                    return data ? req.cookies[data] : req.cookies;
+                case "Ip":
+                    return req.ip;
+                default:
+                    return null;
+            }
+        })
 
     }
 

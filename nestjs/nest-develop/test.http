@@ -1,0 +1,1 @@
+GET http://localhost:3000/user/hello?a=1&b=100 HTTP/1.1
