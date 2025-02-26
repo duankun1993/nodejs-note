@@ -11,7 +11,7 @@ const createParamDeecorator = (key: string) => {
         return (target: any, propertyKey: string, parameterIndex: number) => {
             // 给target的propertyKey方法添加元数据 如："params:requestHandler" 值为 []
             // 数组的的数据表示哪个位置使用什么参数装饰器
-            console.log(target, propertyKey, parameterIndex);
+            // console.log(target, propertyKey, parameterIndex);
 
             // 获取该方法已经存在的参数装饰器信息
             const existParamsMetadatas = Reflect.getMetadata("params", target, propertyKey) || [];
